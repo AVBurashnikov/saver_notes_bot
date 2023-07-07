@@ -1,12 +1,14 @@
-import telebot
 from sqlalchemy import create_engine, Table, Column, Integer, String, MetaData, DateTime
 from sqlalchemy.sql import func
+from dotenv import load_dotenv, find_dotenv
+import telebot
 import logging
 import os
 
+load_dotenv()
 
 # Initialize the Telegram Bot API
-token = os.getenv('TOKEN')
+token = os.environ.get('TOKEN')
 bot = telebot.TeleBot(token, parse_mode='MARKDOWN')
 
 # Create the database engine and metadata
