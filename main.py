@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine, Table, Column, Integer, String, MetaData, DateTime
-from sqlalchemy.sql import func
-from dotenv import load_dotenv, find_dotenv
+from dotenv import load_dotenv
+import datetime
 import telebot
 import logging
 import os
@@ -20,7 +20,7 @@ notes = Table('notes', metadata,
               Column('id', Integer, primary_key=True),
               Column('user_id', Integer),
               Column('note_text', String),
-              Column('timestamp', DateTime, default=func.now())
+              Column('timestamp', DateTime(), default=datetime.datetime.now())
 )
 
 metadata.create_all(engine)
@@ -91,7 +91,7 @@ def update_note(message):
     if updated_rows > 0:
         bot.reply_to(message, '✏  Note updated successfully!')
     else:
-        bot.reply_to(message, '🚫  Note not found.')
+        bot.reply_to(message, '🚫  Такая заметка не найдена.')
 
 
 @bot.message_handler(commands=['notes'])
@@ -104,13 +104,13 @@ def list_notes(message):
         notes_list = result.fetchall()
 
     if len(notes_list) > 0:
-        response = '📃 Ваши сохраненные заметки:\n\n'
+        response = '📃 *Cохраненные заметки*:\n\n'
         for note in notes_list:
             note_text = note.note_text
             timestamp = note.timestamp.strftime("%d-%m-%Y %H:%M:%S")
-            response += '{}. {} `(Добавлено: {})`\n'.format(note.id, note_text, timestamp)
+            response += '*{})*  {} `(Добавлено: {})`\n'.format(note.id, note_text, timestamp)
     else:
-        response = '⚪ Пока ни одной заметки.'
+        response = '⚪ Пока нет ни одной заметки.'
 
     bot.send_message(message.chat.id, response)
 
@@ -129,9 +129,9 @@ def delete_note(message):
         connection.commit()
 
     if deleted_rows > 0:
-        bot.reply_to(message, '❌ Note {} deleted successfully!'.format(note_id))
+        bot.reply_to(message, '❌ Заметка {} была успешно удалена!'.format(note_id))
     else:
-        bot.reply_to(message, 'Note not found. 🚫')
+        bot.reply_to(message, 'Такая заметка не найдена. 🚫')
 
 
 # Start the bot
