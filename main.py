@@ -57,16 +57,18 @@ def save_note(message):
     # Extract the user ID and note text from the message
     user_id = message.chat.id
     note_text = message.text.replace('/save', '').strip()
+    timestamp = datetime.datetime.fromtimestamp(message.date)
+
     if not note_text:
-        bot.reply_to(message, '🚫 can\'t save empty note!')
+        bot.reply_to(message, '🚫 Нельзя сохранить пустую заметку!')
         return
 
     # Insert the note into the database
     with engine.connect() as connection:
-        connection.execute(notes.insert().values(user_id=user_id, note_text=note_text))
+        connection.execute(notes.insert().values(user_id=user_id, note_text=note_text, timestamp=timestamp))
         connection.commit()
 
-    bot.reply_to(message, '✅ Note saved successfully!')
+    bot.reply_to(message, '✅ Заметка успешно сохранена!')
 
 
 @bot.message_handler(commands=['update'])
@@ -89,7 +91,7 @@ def update_note(message):
         updated_rows = result.rowcount
 
     if updated_rows > 0:
-        bot.reply_to(message, '✏  Note updated successfully!')
+        bot.reply_to(message, f'✏  Заметка {note_id} обновлена!')
     else:
         bot.reply_to(message, '🚫  Такая заметка не найдена.')
 
@@ -107,7 +109,7 @@ def list_notes(message):
         response = '📃 *Cохраненные заметки*:\n\n'
         for note in notes_list:
             note_text = note.note_text
-            timestamp = note.timestamp.strftime("%d-%m-%Y %H:%M:%S")
+            timestamp = note.timestamp.strftime('%d-%m-%Y %H:%M:%S')
             response += '*{})*  {} `(Добавлено: {})`\n'.format(note.id, note_text, timestamp)
     else:
         response = '⚪ Пока нет ни одной заметки.'
